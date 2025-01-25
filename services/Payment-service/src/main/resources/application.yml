@@ -1,0 +1,22 @@
+
+spring:
+  config:
+    import: optional:configserver:http://localhost:8888
+  application:
+    name: payment-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ecommerce_payment
+    username: postgres
+    password: default
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+  kafka:
+    producer:
+      bootstrap-servers: localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+server:
+  port: 8093
+
