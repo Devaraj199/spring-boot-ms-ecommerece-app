@@ -8,22 +8,21 @@ public class OrderMapper {
         if (request == null) {
             return null;
         }
-//        return Order.builder()
-//                .id(request.id())
-//                .reference(request.reference())
-//                .paymentMethod(request.paymentMethod())
-//                .customerId(request.customerId())
-//                .build();
-        return new Order();
+       return Order.builder()
+               .id(request.id())
+              .reference(request.reference())
+               .paymentMethod(request.paymentMethod())
+              .customerId(request.customerId())
+                .build();
     }
 
-//    public OrderResponse fromOrder(Order order) {
-//        return new OrderResponse(
-//                order.getId(),
-//                order.getReference(),
-//                order.getTotalAmount(),
-//                order.getPaymentMethod(),
-//                order.getCustomerId()
-//        );
-//    }
+    public OrderResponse fromOrder(Order order) {
+        return new OrderResponse(
+              order.getId(),
+               order.getReference(),
+               order.getTotalAmount(),
+                order.getPaymentMethod(),
+               order.getCustomerId()
+      );
+   }
 }

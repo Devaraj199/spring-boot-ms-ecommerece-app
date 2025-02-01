@@ -1,0 +1,15 @@
+package com.deva.ecommerce.notification;
+
+import com.deva.ecommerce.kafka.payment.PaymentMethod;
+
+import java.math.BigDecimal;
+
+public record PaymentNotificationRequest(
+        String orderReference,
+        BigDecimal amount,
+        PaymentMethod paymentMethod,
+        String customerFirstname,
+        String customerLastname,
+        String customerEmail
+) {
+}

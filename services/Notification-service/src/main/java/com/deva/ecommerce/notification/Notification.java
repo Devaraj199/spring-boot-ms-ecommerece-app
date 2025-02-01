@@ -1,8 +1,4 @@
 package com.deva.ecommerce.notification;
-
-import com.deva.ecommerce.kafka.order.OrderConfirmation;
-import com.deva.ecommerce.kafka.payment.PaymentConfirmation;
-import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.*;
@@ -14,11 +10,13 @@ import java.time.LocalDateTime;
 @Builder
 @Getter
 @Setter
+@Entity
 public class Notification {
-
+    @Id
     private String id;
     private NotificationType type;
     private LocalDateTime notificationDate;
-    private OrderConfirmation orderConfirmation;
-    private PaymentConfirmation paymentConfirmation;
+//    private OrderConfirmation orderConfirmation;
+//    private PaymentNotificationRequest notificationRequest;
+
 }

@@ -9,14 +9,13 @@ public class CustomerMapper {
         if (request == null) {
             return null;
         }
-        Customer customer = Customer.builder()
+        return Customer.builder()
                 .id(request.id())
                 .firstname(request.firstname())
                 .lastname(request.lastname())
                 .email(request.email())
                 .address(request.address())
                 .build();
-        return customer;
     }
 
     public CustomerResponse fromCustomer(Customer customer) {

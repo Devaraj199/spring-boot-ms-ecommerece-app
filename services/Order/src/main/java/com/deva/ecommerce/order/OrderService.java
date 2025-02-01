@@ -2,8 +2,12 @@ package com.deva.ecommerce.order;
 
 import com.deva.ecommerce.customer.CustomerClient;
 import com.deva.ecommerce.exception.BusinessException;
+import com.deva.ecommerce.kafka.OrderConfirmation;
+import com.deva.ecommerce.kafka.OrderProducer;
 import com.deva.ecommerce.orderline.OrderLineRequest;
 import com.deva.ecommerce.orderline.OrderLineService;
+import com.deva.ecommerce.payment.PaymentClient;
+import com.deva.ecommerce.payment.PaymentRequest;
 import com.deva.ecommerce.product.ProductClient;
 import com.deva.ecommerce.product.PurchaseRequest;
 import lombok.RequiredArgsConstructor;
@@ -16,14 +20,18 @@ public class OrderService {
     private final CustomerClient customerClient;
     private final ProductClient productClient;
     private final OrderLineService orderLineService;
+    private final PaymentClient paymentClient;
+    private final OrderProducer orderProducer;
     public OrderService(OrderRepository orderRepository, OrderMapper orderMapper,
                         CustomerClient customerClient, ProductClient productClient,
-                        OrderLineService orderLineService) {
+                        OrderLineService orderLineService,PaymentClient paymentClient,OrderProducer orderProducer) {
         this.orderRepository = orderRepository;
         this.orderMapper = orderMapper;
         this.customerClient = customerClient;
         this.productClient = productClient;
         this.orderLineService = orderLineService;
+        this.paymentClient  = paymentClient;
+        this.orderProducer = orderProducer;
     }
 
 
@@ -32,25 +40,43 @@ public class OrderService {
             var customer  = this.customerClient.findCustomerById(orderRequest.customerId())
                     .orElseThrow(()->new BusinessException("Can't create order:: No Customer exist with the provided ID:" + orderRequest.customerId()));
 // purchase product -> product microservice
-          var x =  this.productClient.purchaseProducts(orderRequest.products());
-        System.out.println(x);
-//        // persist the order
-//           var order =  this.orderRepository.save(orderMapper.toOrder(orderRequest));
+        System.out.println(customer);
+        var purchasedProducts = productClient.purchaseProducts(orderRequest.products());
+//         persist the order
+        var order =  this.orderRepository.save(orderMapper.toOrder(orderRequest));
         // persist the order lines
-//        for(PurchaseRequest purchaseRequest:orderRequest.products()){
-//            orderLineService.saveOrderLine(
-//                    new OrderLineRequest(
-//                            null,
-//                            order.getId(),
-//                            purchaseRequest.productId(),
-//                            purchaseRequest.quantity()
-//                    )
-//            );
-//        }
+        System.out.println(order);
+        for(PurchaseRequest purchaseRequest:orderRequest.products()) {
+            orderLineService.saveOrderLine(
+                    new OrderLineRequest(
+                            order.getId(),
+                            purchaseRequest.productId(),
+                            purchaseRequest.quantity()
+                    )
+            );
+        }
         // start payment process ->  payment ms
-        // send the confirmation -> Notification MS(using kafka)
+        var paymentRequest = new PaymentRequest(
+                orderRequest.amount(),
+                orderRequest.paymentMethod(),
+                order.getId(),
+                order.getReference(),
+                customer
+        );
 
-        return null;
+        paymentClient.requestOrderPayment(paymentRequest);
+        // send the confirmation -> Notification MS(using kafka)
+        orderProducer.sendOrderConfirmation(
+                new OrderConfirmation(
+                        orderRequest.reference(),
+                        orderRequest.amount(),
+                        orderRequest.paymentMethod(),
+                        customer,
+                        purchasedProducts
+                )
+        );
+
+        return order.getId();
     }
 
 

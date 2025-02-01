@@ -6,6 +6,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,10 +19,7 @@ public class CustomerService {
     private CustomerMapper mapper;
     public Long createCustomer(CustomerRequest request) {
         var customer = this.repository.save(mapper.toCustomer(request));
-        if(customer!=null){
-            return customer.getId();
-        }
-        return null;
+        return customer.getId();
     }
 
     public void updateCustomer(CustomerRequest request) {
@@ -51,16 +49,13 @@ public class CustomerService {
     }
 
     public Customer getCustomerById(Long id) {
-        var customer = this.repository.findById(id)
-                .orElseThrow(()->new CustomerNotFoundException(String.format("No customer found with the provided ID",id)));
-        return customer;
+        return this.repository.findById(id)
+                .orElseThrow(()->new CustomerNotFoundException(String.format("No customer found with the provided  ID",id)));
     }
 
 
     public List<Customer> getAllCustomers() {
-        return this.repository.findAll()
-                .stream()
-                .collect(Collectors.toList());
+        return new ArrayList<>(this.repository.findAll());
     }
 
     public void deleteCustomerById(Long id) {

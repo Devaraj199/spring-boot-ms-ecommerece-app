@@ -3,14 +3,3 @@ spring:
     import: optional:configserver:http://localhost:8888
   application:
     name: customer-service
-  datasource:
-    url: jdbc:postgresql://localhost:5432/ecommerce_customer
-    username: postgres
-    password: default
-  jpa:
-    show-sql: true
-    hibernate:
-      ddl-auto: create
-server:
-  port: 8090
-

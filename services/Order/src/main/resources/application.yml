@@ -3,20 +3,3 @@ spring:
     import: optional:configserver:http://localhost:8888
   application:
     name: order-service
-  datasource:
-    url: jdbc:postgresql://localhost:5432/ecommerce_order
-    username: postgres
-    password: default
-  jpa:
-    show-sql: true
-    hibernate:
-      ddl-auto: create
-server:
-  port: 8092
-application:
-  config:
-    customer-url: http://localhost:8090/api/v1/customer
-    payment-url: http://localhost:8222/api/v1/payments
-    product-url: http://localhost:8091/api/v1/products
-
-

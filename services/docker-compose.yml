@@ -1,0 +1,73 @@
+version: '3'
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "22181:2181"   # Mapping 22181 (host) to 2181 (container) for Zookeeper client
+    networks:
+      - microservices-net
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: ms_kafka
+    ports:
+      - "9092:9092"  # Kafka port mapping
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092  # Use 'localhost' to advertise the listener
+      KAFKA_LISTENER_SECURITY_PROTOCOL: PLAINTEXT  # Default security protocol
+      KAFKA_LISTENER_PORT: 9092  # Listener port for Kafka
+      KAFKA_LISTENER_NAMES: PLAINTEXT  # Listener name for Kafka
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT  # Security protocol map
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181  # Connect to Zookeeper
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1  # Set replication factor for Kafka topics
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+    networks:
+      - microservices-net
+  mail-dev:
+    container_name: ms-mail-dev
+    image: maildev/maildev
+    ports:
+      - 1080:1080
+      - 1025:1025
+  zipkin:
+    container_name: zipkin
+    image: openzipkin/zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - microservices-net
+  keycloak:
+    container_name: keycloak-ms
+    image: quay.io/keycloak/keycloak:24.0.2
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HTTP_PORT: 9099
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_HTTP_ENABLED: "true"
+    networks:
+      - microservices-net
+    command:
+      - start-dev
+      - --http-port=9099
+      - --hostname-strict=false
+    ports:
+      - "9099:9099"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9099/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  microservices-net:
+    driver: bridge
